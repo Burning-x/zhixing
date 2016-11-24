@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link type="text/css" rel="stylesheet" href="/css/css.css">
+    <script type="text/javascript" src="./js/jquery.min.js"></script>
+    <script type="text/javascript" src="./js/zhixing.js"></script>
+    <script>
+        $().ready(function(){
+            //页面加载时，设置修改和提交按钮不可用
+            $("#submit").attr("disabled","disabled");
+            $("#updatea").attr("disabled","disabled");
+            //给右侧详细信息绑定ajax时间，动态把信息添加进表单，
+            $(".info").bind("click", function () {
+             var id=$(this)[0].dataset.id;
+                $.post("/getinfo", {"_id": id}, function (result) {
+                    //设置表单不可修改
+                    $("#t1").find("input").not("#updatea").attr("disabled","disabled");
+                    //移除修改按钮不可用状态
+                    $("#updatea").removeAttr("disabled")
+                    //给表单注入ajax返回的值
+                    $("#_id").val(result._id);
+                    $("#ename").val(result.name);
+                    $("#birth").val(result.birth);
+                   $("#country").val(result.address.country);
+                    $("#city").val(result.address.city);
+                    $("#province").val(result.address.province);
+                    $("#district").val(result.address.district);
+                    $("#road").val(result.address.road);
+                    $("#code").val(result.address.code);
+                    if("男"==result.gender){
+                        $("input[type='radio'][value='男']").attr("checked",true);
+                    }else {
+                        $("input[type='radio'][value='女']").attr("checked",true);
+                    }
+                   /*$("#country").val(result.adress.country);*/
+                })
+            })
+            $("#reg_a").click(function(){
+                $("#reg").show();
+            });
+            $(".reg_close").click(function(){
+                $("#reg").hide();
+            });
+        })
+    </script>
+    <title>智行上机题目</title>
+</head>
+<body>
+<div id="top"><a href="javascript:void(0);" id="reg_a">点击添加新员工</a> </div><span id="aaa"></span>
+<div id="content">
+    <div id="left">
+        员工信息
+        <ul>
+            <% for(var i=0;i<name.length;i++){%>
+            <li><a class="info" data-id="<%=name[i]._id%>"><%=name[i].name%></a></li>
+            <% } %>
+        </ul>
+        <button onclick="getPrePage()">上一页</button>当前是&nbsp;<span id="pagenow"><%=parseInt(pagenow)+1%></span>&nbsp;页<button onclick="getNextPage()">下一页</button>
+    </div>
+    <div id="right">
+        <form action="/update" method="post" onsubmit="return ifsubmit()">
+            <table id="t1">
+                <tr><td>姓名：</td><td><input type="text" name="ename" id="ename"><input type="hidden" name="_id" id="_id"></td></tr>
+                <tr><td>性别：</td><td>男：<input type="radio" name="gender" id="gender" value="男">女：<input type="radio" name="gender" id="gender" value="女"></td></tr>
+                <tr><td>生日：</td><td><input type="text" name="birth" id="birth"><span>请输入如1999/02/08格式（目前未做验证）</span></td></tr>
+                <tr><td>所在国家：</td><td><input type="text" name="country" id="country"></td></tr>
+                <tr><td>省份：</td><td><input type="text" name="province" id="province"></td></tr>
+                <tr><td>城市：</td><td><input type="text" name="city" id="city"></td></tr>
+                <tr><td>镇：</td><td><input type="text" name="district" id="district"></td></tr>
+                <tr><td>街道：</td><td><input type="text" name="road" id="road"></td></tr>
+                <tr><td>门牌号:</td><td><input type="text" name="code" id="code"><span>请输入数字，目前未做验证</span></td></tr>
+                <tr><td> <input type="button" value="修改" id="updatea" onclick="myupdate()"></td><td><input type="submit" value="提交" id="submit"></td></tr>
+            </table>
+        </form>
+    </div>
+</div>
+<form id="reg" method="post" action="/insert">
+    <h1><span><a href="javascript:void(0)" class="reg_close">关闭</a></span>新建员工</h1>
+    <ol class="reg_error"></ol>
+    <table>
+        <tr>
+            <td><label for="ename">姓名</label></td><td><input type="text" name="name" class="text" id="user"/></td>
+        </tr>
+        <tr>
+            <td><label for="gender">性别</label></td><td>男：<input type="radio" name="gender" value="男">
+                女：<input type="radio" name="gender" value="女"></td>
+        </tr>
+        <tr>
+            <td><label for="birth">生日</label></td><td><input type="text" name="birth"  id="birth" /><span>请输入如1999/02/08格式（目前未做验证）</span></td>
+        </tr>
+        <tr>
+            <td><label for="country">国家</label></td><td><input type="text" name="country"></td>
+        </tr>
+        <tr>
+            <td><label for="province">省份</label></td><td><input type="text" name="province"></td>
+        </tr>
+        <tr>
+            <td><label for="city">城市</label></td><td><input type="text" name="city"></td>
+        </tr>
+        <tr>
+            <td><label for="district">所在乡镇</label></td><td><input type="text" name="district"></td>
+        </tr>
+        <tr>
+            <td><label for="road"></label>街道地址</td><td><input type="text" name="road"></td>
+        </tr>
+        <tr>
+            <td><label for="code">门牌号</label></td><td><input type="text" name="code"><span>请输入数字，目前未做验证</span></td>
+        </tr>
+    </table>
+    <p>
+        <span>注:未做提交空值验证</span>
+        <input type="submit" value="保存" >
+    </p>
+</form>
+<div id="foot">下边</div>
+</body>
+</html>
